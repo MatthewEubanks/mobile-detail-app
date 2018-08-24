@@ -9,7 +9,7 @@ a {
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background-image: url("../photos/1810144-2.png");
+  background-image: url("photos/1810144-2.png");
   /* The image used */
   background-repeat: no-repeat;
   background-position: center center;
@@ -26,7 +26,7 @@ body {
 .header {
   padding: 60px;
   text-align: center;
-  background: url(../photos/2932191.png) no-repeat center top;
+  background: url(photos/2932191.png) no-repeat center top;
   background-color: white;
   color: white;
   background-size: cover;

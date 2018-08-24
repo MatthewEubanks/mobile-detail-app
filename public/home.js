@@ -18,7 +18,7 @@ function handleHambugerClick() {
 }
 //SHOW HOME PAGE
 function showBlogPosts() {
-    $.getJSON("http://localhost:8080/api/posts", function (data) {      
+    $.getJSON("/api/posts", function (data) {      
         for (let i = 0; i < data.length; i++) {
             $(`<div class="blogContainer"><div class="content">
                 <img src="${data[i].picture}">
@@ -29,14 +29,16 @@ function showBlogPosts() {
 }
 
 function displayHomePage() {
-    $('.new').hide();
-    $('.blogPosts').show();
     
-    showBlogPosts();
+    const showHome = showBlogPosts();
+    $('.new').hide();
+    $('.blogPosts').html(showHome);
+    $('.blogPosts').show();
+    console.log('Display Home');    
 }
 
 function homeButton() {
-    $('.home').on('click', function (event) {
+    $('.area').on('click','.home', function (event) {
         console.log('Home button clicked');
         event.preventDefault();
         displayHomePage();
@@ -69,9 +71,12 @@ function getIndividualPost(id, callback) {
     console.log(id);
     $.ajax({
         type: "GET",
-        url: `http://localhost:8080/api/posts/${id}`,
+        url: `/api/posts/${id}`,
         dataType: "json",
         contentType: "application/json",
+        beforeSend: function(xhr){
+            xhr.setRequestHeader("Authorization","Bearer "+sessionStorage.getItem('authToken'));
+          },
         success: function (response) {
             displayIndividualPost(response);
         }
@@ -187,19 +192,19 @@ function signUpSuccess() {
         // make the api call using the payload above
         $.ajax({
         	type: 'POST',
-        	url: 'http://localhost:8080/api/users',
+        	url: '/api/users',
         	dataType: 'json',
         	data: JSON.stringify(newUserObject),
         	contentType: 'application/json'
         })
         // if call is successful
         .done(function() {
-        	alert('Account created! Please, log in!')
+        	alert('Account created! Please, log in!');
         	displayLoginPage();
         })
         //if the call is failing
         .fail(function(err) {
-        	console.error(err)
+        	console.error(err);
         	alert(`Sign up error: ${err.responseJSON.message}`);
         });
     }
@@ -280,7 +285,7 @@ function loginSuccess() {
             console.log(loginUser);
             $.ajax({
                 type: "POST",
-                url: "http://localhost:8080/api/auth/login",
+                url: "/api/auth/login",
                 data: JSON.stringify(loginUser),
                 dataType: "json",
                 contentType: 'application/json'
@@ -309,7 +314,7 @@ function renderUserHome(userEntries) {
             <a href="#" class="home" id="active">Home</a>
             <a href="#" class="dashboard">Dashboard</a>
             <a href="#" class="newDetail">New Detail</a>
-            <a href="#" class="logout">Logout</a>
+            <a href="#" class="logout-button">Logout</a>
             <a href="javascript:void(0);" class="icon" onclick="myFunction()"><i class="fa fa-bars"></i></a>
         </div>
     </div>
@@ -333,6 +338,10 @@ function renderUserHome(userEntries) {
                     </div>
                 </div>
         </div>
+        <div class="blogPosts">
+
+        </div>
+    </main>
     `;
 }
 
@@ -360,6 +369,14 @@ function showDashboard(user) {
     })
     .fail(function(err) {
         console.err(err);
+    });
+}
+//handle dashboard nav button
+function dashboardButton() {
+    $('.area').on('click', '.dashboard', function(event) {
+        console.log('Dashboard nav button clicked');
+        event.preventDefault();
+        displayDashboard();
     });
 }
 
@@ -395,14 +412,6 @@ function renderNewPost() {
                             <textarea rows="4" cols="40" form="newPost" maxlength="2000" id="desc" name="content" placeholder="Write Something..." required></textarea>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-25">
-                            <label for="username">User Name</label>
-                        </div>
-                        <div class="col-75">
-                            <input type="text" id="username" name="username" placeholder="UserName" required>
-                        </div>
-                    </div>
                     <div class="form-group">
                         <button type="submit" class="submit-btn">Submit</button>
                     </div>
@@ -420,7 +429,7 @@ function displayNewPostPage() {
 }
 //handle new detail button clicked
 function handleNewPostBtn() {
-    $('.navbar').on('click', '.newDetail', function(event) {
+    $('.area').on('click', '.newDetail', function(event) {
         console.log('New Detail Clicked');
         event.preventDefault();
         displayNewPostPage();
@@ -433,6 +442,7 @@ function postNewDetail() {
         const title = $('#title').val();
         const image = $('#image').val();
         const description = $('#desc').val();
+        //const author = 
 
         const newPostObject = {
             title: title,
@@ -442,7 +452,7 @@ function postNewDetail() {
 
         $.ajax({
             type: "POST",
-            url: "../posts",
+            url: "http://localhost:8080/api/entries/posts",
             data: JSON.stringify(newPostObject),
             dataType: "json",
             success: function () {
@@ -462,7 +472,7 @@ function submitPostButton() {
 
 //LOGOUT
 function logOutButton() {
-    $('.area').on('click', '.logout', function(event) {
+    $('.area').on('click', '.logout-button', function(event) {
         event.preventDefault();
         console.log('Logged Out');
         jwt = null;
@@ -471,23 +481,20 @@ function logOutButton() {
     });
 }
 
-function homeButton() {
-    $(".home-").on("click", function() {
-          location.reload();
-    });
-}
-
 //EVENT HANDLERS
 function eventHandlers() {
     showBlogPosts();
     handleNewPostBtn();
     handleTitleClick();
-    homeButton();
     handleHambugerClick();
     handleLoginButton();
     handleSignUpClick();
     signUpSuccess();
     loginSuccess();
+    logOutButton();
+    homeButton();
+    dashboardButton();
+    myFunction();
 }
 
 $(eventHandlers);

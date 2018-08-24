@@ -11,7 +11,7 @@ const passport = require('passport');
 const jwtAuth = passport.authenticate('jwt', { session: false });
 router.use(jwtAuth);
 
-router.get('/', (req, res) => {
+router.get('/', jwtAuth,  (req, res) => {
     Entry
     .find({username: req.user.username})
     .then(entries => {
@@ -27,7 +27,7 @@ router.get('/', (req, res) => {
     });
   });
 //NEW ROUTE
-router.post('/posts', function (req, res) {
+router.post('/posts', jwtAuth, function (req, res) {
     const requiredFields = ['title', 'content','picture', 'userName'];
     requiredFields.forEach(field => {
         if (!(field in req.body)) {
@@ -73,44 +73,44 @@ router.post('/posts', function (req, res) {
             });
         });
 });
-//EDIT ROUTE
-router.put('/posts/:id', function (req, res) {
-    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
-        res.status(400).json({
-            error: 'Request path id and request body id values must match'
-        });
-    }
-    const updated = {};
-    const updateableFields = ['title', 'content'];
-    updateableFields.forEach(field => {
-        if (field in req.body) {
-            updated[field] = req.body[field];
-        }
-    });
-    BlogPost
-        .findByIdAndUpdate(req.params.id, {
-            $set: updated
-        }, {
-            new: true
-        })
-        .then(updatedPost => res.status(200).json({
-            id: updatedPost.id,
-            title: updatedPost.title,
-            content: updatedPost.content
-        }))
-        .catch(err => res.status(500).json({
-            message: err
-        }));
-});
+// //EDIT ROUTE
+// router.put('/posts/:id', function (req, res) {
+//     if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+//         res.status(400).json({
+//             error: 'Request path id and request body id values must match'
+//         });
+//     }
+//     const updated = {};
+//     const updateableFields = ['title', 'content'];
+//     updateableFields.forEach(field => {
+//         if (field in req.body) {
+//             updated[field] = req.body[field];
+//         }
+//     });
+//     BlogPost
+//         .findByIdAndUpdate(req.params.id, {
+//             $set: updated
+//         }, {
+//             new: true
+//         })
+//         .then(updatedPost => res.status(200).json({
+//             id: updatedPost.id,
+//             title: updatedPost.title,
+//             content: updatedPost.content
+//         }))
+//         .catch(err => res.status(500).json({
+//             message: err
+//         }));
+// });
 
-//DELETE ROUTE
-router.delete('/posts/:id', function (req, res) {
-    BlogPost
-        .findByIdAndRemove(req.params.id)
-        .then(() => {
-            console.log(`Deleted blog post with id \`${req.params.id}\``);
-            res.status(204).end();
-        });
-});
+// //DELETE ROUTE
+// router.delete('/posts/:id', function (req, res) {
+//     BlogPost
+//         .findByIdAndRemove(req.params.id)
+//         .then(() => {
+//             console.log(`Deleted blog post with id \`${req.params.id}\``);
+//             res.status(204).end();
+//         });
+// });
 
   module.exports = {router};
