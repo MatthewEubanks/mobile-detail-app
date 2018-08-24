@@ -186,8 +186,8 @@ describe('Journal entries API resource', function() {
 		// 4. Prove entry in db is correctly updated
 		it('should update entry on PUT', function() {
 			const updateData = {
-				title: 'Anna Anna',
-				description: 'Hello there...'
+				title: 'Matts Car',
+				description: 'Easy Wax'
 			};
 
 			return Entry

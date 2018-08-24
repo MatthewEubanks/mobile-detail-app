@@ -1,5 +1,27 @@
 let jwt;
 
+//AUTH
+function rememberUserLog() {
+    $(document).ready(function () {
+        if (sessionStorage.getItem('authToken')) {
+            $.ajax({
+                type: "POST",
+                url: "/api/auth/refresh",
+                dataType: "json",
+                headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('authToken')}`
+                },
+                success: function (response) {
+                    console.log(res);
+                    jwt = res.authToken;
+                    sessionStorage.setItem('authToken', jwt);
+                    showDashboard(sessionStorage.getItem('username'));
+                }
+            });
+        }
+    });
+}
+
 //NAV BAR FUNCTION
 function myFunction() {
     var x = document.getElementById("myTopnav");
@@ -11,40 +33,41 @@ function myFunction() {
 }
 
 function handleHambugerClick() {
-    $('.fa fa-bars').on('click', function(event) {
+    $('.fa fa-bars').on('click', function (event) {
         event.preventDefault();
         myFunction();
     });
 }
 //SHOW HOME PAGE
 function showBlogPosts() {
-    $.getJSON("/api/posts", function (data) {      
+    $.getJSON("/api/entries", function (data) {
         for (let i = 0; i < data.length; i++) {
             $(`<div class="blogContainer"><div class="content">
                 <img src="${data[i].picture}">
                 <h3><a href ="#" data-entryid="${data[i].id}" class="entry-title">${data[i].title}</a></h3>
-                </div>`).appendTo(".blogPosts");            
+                </div>`).appendTo(".blogPosts");
         }
     });
 }
 
 function displayHomePage() {
-    
+
     const showHome = showBlogPosts();
     $('.new').hide();
     $('.blogPosts').html(showHome);
     $('.blogPosts').show();
-    console.log('Display Home');    
+    console.log('Display Home');
 }
 
 function homeButton() {
-    $('.area').on('click','.home', function (event) {
+    $('.area').on('click', '.home', function (event) {
         console.log('Home button clicked');
         event.preventDefault();
         displayHomePage();
 
     });
 }
+
 function renderSinglePost(response) {
     return `
     <div class="blogContainer"><div class="content">
@@ -74,9 +97,9 @@ function getIndividualPost(id, callback) {
         url: `/api/posts/${id}`,
         dataType: "json",
         contentType: "application/json",
-        beforeSend: function(xhr){
-            xhr.setRequestHeader("Authorization","Bearer "+sessionStorage.getItem('authToken'));
-          },
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + sessionStorage.getItem('authToken'));
+        },
         success: function (response) {
             displayIndividualPost(response);
         }
@@ -87,7 +110,7 @@ function getIndividualPost(id, callback) {
 function handleTitleClick() {
     $('.blogPosts').on('click', '.entry-title', function () {
         console.log('Title of Post clicked');
-        const id = $(this).data("entryid");        
+        const id = $(this).data("entryid");
         getIndividualPost(id, displayIndividualPost);
     });
 }
@@ -147,69 +170,72 @@ function renderSignUp() {
 </div>
             `;
 }
+
 function displaySignUp() {
     const signUpPage = renderSignUp();
     $('.blogPosts').hide();
     $('.new').html(signUpPage);
     $('.new').show();
 }
+
 function handleSignUpClick() {
-    $('.area').on('click','.signup', function(event) {
+    $('.area').on('click', '.signup', function (event) {
         event.preventDefault();
         displaySignUp();
     });
 }
+
 function signUpSuccess() {
-    $('.area').on('submit', '.signUp', function(event) {
-		console.log('SignUp Success');
-		event.preventDefault();
+    $('.area').on('submit', '.signUp', function (event) {
+        console.log('SignUp Success');
+        event.preventDefault();
         //get values from sign up form
         const firstName = $('#fName').val();
         const lastName = $('#lName').val();
-		const username = $('#email').val();
-		const password = $('#password').val();
-		const confirmPassword = $('#password-confirm').val();
+        const username = $('#email').val();
+        const password = $('#password').val();
+        const confirmPassword = $('#password-confirm').val();
 
-		//validate user inputs
-		  // validate user inputs
-    if (username == '')
-        alert('Must input username');
-    else if (password == '')
-        alert('Must input password');
-    else if (confirmPassword == '')
-        alert('Must re-enter password');
-    else if (password != confirmPassword)
-        alert('Passwords do not match');
+        //validate user inputs
+        // validate user inputs
+        if (username == '')
+            alert('Must input username');
+        else if (password == '')
+            alert('Must input password');
+        else if (confirmPassword == '')
+            alert('Must re-enter password');
+        else if (password != confirmPassword)
+            alert('Passwords do not match');
         // if valid
         else {
-        // create the payload object (what data we send to the api call)
-        const newUserObject = {
-            firstName: firstName,
-            lastName: lastName,
-            username: username,
-            password: password
-        };
-        // make the api call using the payload above
-        $.ajax({
-        	type: 'POST',
-        	url: '/api/users',
-        	dataType: 'json',
-        	data: JSON.stringify(newUserObject),
-        	contentType: 'application/json'
-        })
-        // if call is successful
-        .done(function() {
-        	alert('Account created! Please, log in!');
-        	displayLoginPage();
-        })
-        //if the call is failing
-        .fail(function(err) {
-        	console.error(err);
-        	alert(`Sign up error: ${err.responseJSON.message}`);
-        });
-    }
-		
-	});
+            // create the payload object (what data we send to the api call)
+            const newUserObject = {
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                password: password
+            };
+            // make the api call using the payload above
+            $.ajax({
+                    type: 'POST',
+                    url: '/api/users',
+                    dataType: 'json',
+                    data: JSON.stringify(newUserObject),
+                    contentType: 'application/json'
+                })
+                // if call is successful
+                .done(function () {
+                    alert('Account created! Please, log in!');
+                    displayLoginPage();
+                })
+                //if the call is failing
+                .fail(function (err) {
+                    console.error(err);
+                    alert(`Sign up error: ${err.responseJSON.message}`);
+                });
+        }
+
+    });
 }
 
 //LOGIN PAGE
@@ -262,7 +288,7 @@ function handleLoginButton() {
 
 //authentication
 function loginSuccess() {
-    $('.area').on('submit', '.login', function(event) {
+    $('.area').on('submit', '.login', function (event) {
         console.log('Login Success');
         event.preventDefault();
         //get inputs
@@ -284,24 +310,24 @@ function loginSuccess() {
             };
             console.log(loginUser);
             $.ajax({
-                type: "POST",
-                url: "/api/auth/login",
-                data: JSON.stringify(loginUser),
-                dataType: "json",
-                contentType: 'application/json'
-            })
-            //call successful
-            .done(function(data) {
-                jwt = data.authToken;
+                    type: "POST",
+                    url: "/api/auth/login",
+                    data: JSON.stringify(loginUser),
+                    dataType: "json",
+                    contentType: 'application/json'
+                })
+                //call successful
+                .done(function (data) {
+                    jwt = data.authToken;
                     sessionStorage.setItem('authToken', jwt);
                     sessionStorage.setItem('username', loginUser.username);
                     showDashboard();
-            })
-            //call failed
-            .fail(function(err) {
-                console.err(err);
-                alert('Login Failed. Try again or Sign Up.');
-            });
+                })
+                //call failed
+                .fail(function (err) {
+                    console.err(err);
+                    alert('Login Failed. Try again or Sign Up.');
+                });
         }
     });
 }
@@ -347,7 +373,7 @@ function renderUserHome(userEntries) {
 
 function displayDashboard(userEntries) {
     const userHome = renderUserHome(userEntries);
-    $('#main-page').hide();
+    //$('#main-page').hide();
     $('.navbar').hide();
     $('.area').html(userHome);
     $('.area').show();
@@ -355,25 +381,25 @@ function displayDashboard(userEntries) {
 
 function showDashboard(user) {
     $.ajax({
-        type: 'GET',
-        url: `http://localhost:8080/api/entries`,
-        dataType: 'json',
-        contentType: 'application/json',
-        headers: {
-            Authorization: `Bearer ${jwt}`
-        }
-    })
-    .done(function(result) {
-        console.log(result);
-        displayDashboard(result.entries);
-    })
-    .fail(function(err) {
-        console.err(err);
-    });
+            type: 'GET',
+            url: `http://localhost:8080/api/entries`,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {
+                Authorization: `Bearer ${jwt}`
+            }
+        })
+        .done(function (result) {
+            console.log(result);
+            displayDashboard(result.entries);
+        })
+        .fail(function (err) {
+            console.err(err);
+        });
 }
 //handle dashboard nav button
 function dashboardButton() {
-    $('.area').on('click', '.dashboard', function(event) {
+    $('.area').on('click', '.dashboard', function (event) {
         console.log('Dashboard nav button clicked');
         event.preventDefault();
         displayDashboard();
@@ -413,7 +439,7 @@ function renderNewPost() {
                         </div>
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="submit-btn">Submit</button>
+                        <button type="submit" class="save-btn">Save</button>
                     </div>
                 </form>
             </div>
@@ -429,7 +455,7 @@ function displayNewPostPage() {
 }
 //handle new detail button clicked
 function handleNewPostBtn() {
-    $('.area').on('click', '.newDetail', function(event) {
+    $('.area').on('click', '.newDetail', function (event) {
         console.log('New Detail Clicked');
         event.preventDefault();
         displayNewPostPage();
@@ -452,7 +478,7 @@ function postNewDetail() {
 
         $.ajax({
             type: "POST",
-            url: "http://localhost:8080/api/entries/posts",
+            url: "/entries/",
             data: JSON.stringify(newPostObject),
             dataType: "json",
             success: function () {
@@ -466,13 +492,13 @@ function submitPostButton() {
     $('.submit-btn').on('click', function (event) {
         console.log('Sign Up Clicked');
         event.preventDefault();
-        
+
     });
 }
 
 //LOGOUT
 function logOutButton() {
-    $('.area').on('click', '.logout-button', function(event) {
+    $('.area').on('click', '.logout-button', function (event) {
         event.preventDefault();
         console.log('Logged Out');
         jwt = null;
